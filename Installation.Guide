@@ -1,6 +1,6 @@
-# PMC Storage Utilization Monitor - Detailed Installation Guide
+# Storage Utilization Monitor - Detailed Installation Guide
 
-This guide provides comprehensive step-by-step instructions for setting up and running the PMC Storage Utilization Monitor. Designed for individuals with limited or no programming experience, this guide will help you get the monitoring system up and running on your network.
+This guide provides comprehensive step-by-step instructions for setting up and running the Storage Utilization Monitor. Designed for individuals with limited or no programming experience, this guide will help you get the monitoring system up and running on your network.
 
 ## Prerequisites
 
@@ -178,7 +178,7 @@ Add the following content:
 
 ```
 [Unit]
-Description=PMC Storage Utilization Monitor
+Description=Storage Utilization Monitor
 After=network.target
 
 [Service]
