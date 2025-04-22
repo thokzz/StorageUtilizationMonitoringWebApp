@@ -1,0 +1,300 @@
+# PMC Storage Utilization Monitor - Detailed Installation Guide
+
+This guide provides comprehensive step-by-step instructions for setting up and running the PMC Storage Utilization Monitor. Designed for individuals with limited or no programming experience, this guide will help you get the monitoring system up and running on your network.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- A Linux-based server or virtual machine (Ubuntu 20.04+ recommended)
+- Root/sudo access to the server
+- Network connectivity to your SMB/CIFS shares
+- Python 3.6+ installed
+
+## Step 1: Set up the Environment
+
+### Create a Project Directory
+
+```bash
+# Create a directory for the project
+mkdir -p /opt/storage-monitor
+cd /opt/storage-monitor
+```
+
+### Set up Python Virtual Environment
+
+```bash
+# Install Python venv if not already installed
+sudo apt-get update
+sudo apt-get install -y python3-venv
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### Install Required Python Packages
+
+```bash
+# Upgrade pip
+pip install --upgrade pip
+
+# Install required packages
+pip install flask psutil
+```
+
+## Step 2: Create Project Files
+
+### Create Application File
+
+Create `storagemonitor.py` with the content from the provided file.
+
+```bash
+nano storagemonitor.py
+```
+
+Paste the code from the `storagemonitor.py` file, then save and exit (Ctrl+X, then Y).
+
+### Create Mount Script Directory
+
+```bash
+sudo mkdir -p /scripts
+cd /scripts
+```
+
+### Create Mount Script
+
+```bash
+sudo nano auto_mount_smb.sh
+```
+
+Paste the code from the `auto_mount_smb.sh` file, then save and exit.
+
+### Make the Script Executable
+
+```bash
+sudo chmod +x /scripts/auto_mount_smb.sh
+```
+
+### Create Templates Directory and HTML Template
+
+```bash
+cd /opt/storage-monitor
+mkdir -p templates
+nano templates/index.html
+```
+
+Paste the code from the `index.html` file, then save and exit.
+
+## Step 3: Configure SMB Credentials
+
+### Create Credentials File
+
+```bash
+sudo mkdir -p /path-to-your/Documents
+sudo nano /path-to-your/Documents/smb_credentials
+```
+
+Add the following content, replacing with your actual credentials:
+
+```
+username=your_smb_username
+password=your_smb_password
+domain=your_domain
+```
+
+### Secure the Credentials File
+
+```bash
+sudo chmod 600 /path-to-your/Documents/smb_credentials
+```
+
+## Step 4: Customize the Application
+
+### Update Server IP Address
+
+Edit the auto_mount_smb.sh script to use the correct SMB server address:
+
+```bash
+sudo nano /scripts/auto_mount_smb.sh
+```
+
+Change the SERVER variable to your SMB server's IP address:
+
+```bash
+SERVER="your.server.ip.address"
+```
+
+### Update Authentication Credentials
+
+If you want to change the authentication credentials for the refresh function, edit storagemonitor.py:
+
+```bash
+nano /opt/storage-monitor/storagemonitor.py
+```
+
+Find this section and update the credentials:
+
+```python
+if username != "<YourUSERNAME>" or password != "<DECLAREYOURPASSWORD>":
+    return {"success": False, "message": "Invalid credentials"}, 401
+```
+
+### Update Total Storage Capacity
+
+To display the correct total storage capacity, edit storagemonitor.py:
+
+```bash
+nano /opt/storage-monitor/storagemonitor.py
+```
+
+Find and change this line to reflect your actual total storage capacity:
+
+```python
+total_capacity_tb = 2304.763289  # Change to your actual total capacity
+```
+
+## Step 5: Run the Application
+
+### Start the Monitor
+
+```bash
+cd /opt/storage-monitor
+source venv/bin/activate
+python storagemonitor.py
+```
+
+The application should now be running and accessible at http://your-server-ip:7443
+
+### Create a Systemd Service (Optional)
+
+For a more permanent setup, create a systemd service:
+
+```bash
+sudo nano /etc/systemd/system/storage-monitor.service
+```
+
+Add the following content:
+
+```
+[Unit]
+Description=PMC Storage Utilization Monitor
+After=network.target
+
+[Service]
+User=your_username
+WorkingDirectory=/opt/storage-monitor
+ExecStart=/opt/storage-monitor/venv/bin/python /opt/storage-monitor/storagemonitor.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start the service:
+
+```bash
+sudo systemctl enable storage-monitor.service
+sudo systemctl start storage-monitor.service
+```
+
+Check the service status:
+
+```bash
+sudo systemctl status storage-monitor.service
+```
+
+## Step 6: Access and Use the Monitor
+
+1. Open a web browser and navigate to `http://your-server-ip:7443`
+2. You should see the storage utilization dashboard
+3. Use the tabs to view different categories of storage
+4. Toggle auto-refresh for real-time updates
+5. Use the filter to search for specific mount points
+6. Click "Refresh Volume Mounts" when you need to update mount information (requires authentication)
+
+## Troubleshooting
+
+### Application Won't Start
+
+Check for errors in the Python application:
+
+```bash
+cd /opt/storage-monitor
+source venv/bin/activate
+python storagemonitor.py
+```
+
+Look for error messages in the output.
+
+### Mount Script Errors
+
+If the mount script is failing:
+
+```bash
+sudo /scripts/auto_mount_smb.sh
+```
+
+Examine any error output for network or credential issues.
+
+### Permission Issues
+
+Ensure your user has the necessary permissions:
+
+```bash
+# Allow your user to execute the mount script with sudo
+sudo visudo
+```
+
+Add the following line, replacing with your username:
+
+```
+your_username ALL=(ALL) NOPASSWD: /scripts/auto_mount_smb.sh
+```
+
+### Check Logs
+
+If running as a service, check the logs:
+
+```bash
+sudo journalctl -u storage-monitor.service
+```
+
+## Security Recommendations
+
+1. **Change Default Credentials**: Update the hardcoded credentials in the script
+2. **Use HTTPS**: Consider setting up a reverse proxy with HTTPS for secure access
+3. **Network Restrictions**: Limit access to the application using firewall rules
+4. **Regular Updates**: Keep the server and all packages updated
+
+## Additional Customizations
+
+### Modifying the Refresh Interval
+
+Edit the index.html file to change the auto-refresh interval (default is 15 seconds):
+
+```bash
+nano /opt/storage-monitor/templates/index.html
+```
+
+Find and edit this line in the JavaScript section:
+
+```javascript
+refreshMetaTag.setAttribute('content', '15');  // Change '15' to your desired seconds
+```
+
+### Changing the Color Scheme
+
+Edit the CSS variables in the index.html file:
+
+```css
+:root {
+    --primary-color: #673DE6;  /* Change to your preferred color */
+    --secondary-color: #2F1C6A;
+    /* ... other color variables ... */
+}
+```
+
+---
+
+*Created by a non-programmer using AI assistance (ChatGPT 4.0 and Claude 3.7 Sonnet).*
