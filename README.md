@@ -6,6 +6,15 @@ This Storage Utilization Monitor is a web application designed to monitor and di
 
 **Created without prior coding experience using AI assistance (ChatGPT 4.0 and Claude 3.7 Sonnet)**
 
+### 💻 Storage Utilization Monitoring WebApp
+
+#### 🧭 Main Dashboard
+![WebApp Main](https://github.com/thokzz/StorageUtilizationMonitoringWebApp/blob/main/Assets/WebApp%20Main.png?raw=true)
+
+#### 📊 Other Page View
+![WebApp Other Page](https://github.com/thokzz/StorageUtilizationMonitoringWebApp/blob/main/Assets/WebApp%20Other%20Page.png?raw=true)
+
+
 ## Key Features
 
 - **Real-time Storage Monitoring**: Track storage utilization across multiple mounted volumes
