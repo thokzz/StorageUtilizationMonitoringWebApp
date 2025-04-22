@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Auto-refresh meta tag added by default -->
+    <title>PMC Storage Utilization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #673DE6;
+            --secondary-color: #2F1C6A;
+            --danger-color: #FF3D57;
+            --warning-color: #FFBD2E;
+            --success-color: #00B090;
+            --light-bg: #F8F9FA;
+            --dark-bg: #1F2937;
+            --text-dark: #2E3856;
+            --text-light: #5F6C7B;
+            --border-color: #EAEDF0;
+            --white: #FFFFFF;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--white);
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-area h1 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .actions-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .download-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            background-color: #5429d0;
+        }
+
+        /* Filter styles */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .filter-form {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .filter-btn:hover {
+            background-color: #241756;
+        }
+
+        .clear-filter-btn {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .clear-filter-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #EDE7F6;
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            gap: 6px;
+        }
+
+        .filter-badge-clear {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .close-modal {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .auth-form {
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .cancel-btn {
+            background-color: #e9ecef;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .auth-error {
+            color: var(--danger-color);
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* Table styles */
+        .dashboard-section {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin: 25px 0;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .section-body {
+            padding: 0;
+            overflow-x: auto;
+        }
+
+        /* Tab navigation styles */
+        .tabs-container {
+            margin: 25px 0 0;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            position: relative;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-light);
+            background-color: #F8F9FA;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f9f9fd;
+        }
+
+        /* Column widths */
+        .col-device { width: 30%; }
+        .col-mountpoint { width: 30%; }
+        .col-total, .col-used, .col-free { width: 10%; }
+        .col-utilization { width: 10%; }
+
+        /* Cell content management */
+        td.col-device, td.col-mountpoint {
+            word-break: break-word;
+            hyphens: auto;
+        }
+        
+        /* Util text display */
+        .device-text, .mountpoint-text {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Device and mountpoint tooltips */
+        td[title] {
+            position: relative;
+        }
+        
+        td[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: var(--secondary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            z-index: 10;
+            white-space: normal;
+            word-break: break-all;
+            max-width: 350px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Utilization colors */
+        .low-utilization {
+            background-color: var(--white);
+        }
+        .medium-utilization {
+            background-color: rgba(255, 189, 46, 0.15);
+        }
+        .high-utilization {
+            background-color: rgba(255, 152, 0, 0.15);
+        }
+        .very-high-utilization {
+            background-color: rgba(103, 61, 230, 0.15);
+        }
+        .critical-utilization {
+            background-color: rgba(255, 61, 87, 0.15);
+        }
+
+        .utilization-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .badge-low {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge-medium {
+            background-color: #FFF8E1;
+            color: #F57F17;
+        }
+
+        .badge-high {
+            background-color: #FFF3E0;
+            color: #E65100;
+        }
+
+        .badge-very-high {
+            background-color: #EDE7F6;
+            color: #4527A0;
+        }
+
+        .badge-critical {
+            background-color: #FFEBEE;
+            color: #C62828;
+        }
+
+        .refresh-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            background-color: #f0f7ff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        /* Refresh-Volume */
+        .refresh-mounts-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .refresh-mounts-btn:hover {
+            background-color: #009879;
+        }
+        
+        .refresh-mounts-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+                
+        
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .toggle-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .section-body {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 900px; /* Ensure table doesn't get too narrow */
+            }
+            
+            .tabs-nav {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .tab-btn {
+                flex: 0 0 auto;
+                min-width: 120px;
+            }
+
+            .actions-container {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .download-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .filter-container {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .filter-input {
+                width: 100%;
+                flex: 1 1 100%;
+                margin-bottom: 10px;
+            }
+            
+            th, td {
+                padding: 12px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .tab-btn {
+                padding: 12px 15px;
+                font-size: 0.85rem;
+                min-width: 100px;
+            }
+        }
+    </style>
+    
+<!-- jQuery and DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="title-area">
+                <h1>PMC Storage Utilization</h1>
+                <div class="subtitle">
+                    Storage Utilization as of {{ today }}:
+                    <strong>{{ "%.5f"|format(total_used_tb) }} TB</strong> used out of
+                    <strong>2304.763289 TB</strong><br>
+                    PMC Storage Percentage Utilization:
+                    <strong>{{ "%.2f"|format(percent_utilized) }}%</strong>
+                </div>
+
+                <div class="refresh-notice">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    <span id="refresh-status">Auto-refresh is disabled</span>
+                    <div class="toggle-container">
+                        <span class="toggle-label">Auto-refresh:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="refresh-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="actions-container">
+                <a href="/download{% if current_filter %}?filter={{ current_filter }}{% endif %}" download>
+                    <button class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Utilization CSV File
+                    </button>
+                </a>
+                
+                <button class="refresh-mounts-btn" id="refresh-mounts-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                            <path d="M21 3v5h-5"></path>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                            <path d="M3 21v-5h5"></path>
+                        </svg>
+                        Refresh Volume Mounts
+                    </button>
+                </div>
+                
+                
+                
+            </div>
+        </div>
+        <div class="container">
+            <div class="filter-container">
+                <form action="/" method="get" id="filter-form">
+                    <input type="text" name="filter" class="filter-input" placeholder="Filter by mountpoint" value="{{ current_filter }}">
+                    <button type="submit" class="filter-btn">Apply Filter</button>
+                    {% if current_filter %}
+                    <a href="/" class="clear-filter-btn">Clear Filter</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if current_filter %}
+        <div class="filter-status" style="margin: 20px 0 0;">
+            <div class="filter-badge">
+                Filtering by: {{ current_filter }}
+                <a href="/" class="filter-badge-clear">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                {% if critical_data %}
+                <button type="button" class="tab-btn active" onclick="openTab('critical-tab')">Critical Utilization</button>
+                {% endif %}
+                <button type="button" class="tab-btn {% if not critical_data %}active{% endif %}" onclick="openTab('general-tab')">General Utilization</button>
+                {% if curator_data %}
+                <button type="button" class="tab-btn" onclick="openTab('curator-tab')">Curator Utilization</button>
+                {% endif %}
+                {% if raysync_data %}
+                <button type="button" class="tab-btn" onclick="openTab('raysync-tab')">RaySync Utilization</button>
+                {% endif %}
+                {% if lucid_data %}
+                <button type="button" class="tab-btn" onclick="openTab('lucid-tab')">LucidLink Utilization</button>
+                {% endif %}
+                {% if defunct_data %}
+                <button type="button" class="tab-btn" onclick="openTab('defunct-tab')">Defunct Volumes</button>
+                {% endif %}
+            </div>
+            
+            {% if critical_data %}
+            <div id="critical-tab" class="tab-content {% if critical_data %}active{% endif %}">
+                <div class="section-header">
+                    <h2>Critical Utilization (91% - 100%)</h2>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-device">Device</th>
+                                <th class="col-mountpoint">Mountpoint</th>
+                                <th class="col-total">Quota (TB)</th>
+                                <th class="col-used">Used (TB)</th>
+                                <th class="col-free">Free (TB)</th>
+                                <th class="col-utilization">Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in critical_data %}
+                            <tr class="{% if data.utilization >= 96 %}critical-utilization{% elif data.utilization >= 90 %}very-high-utilization{% elif data.utilization >= 80 %}high-utilization{% elif data.utilization >= 70 %}medium-utilization{% else %}low-utilization{% endif %}">
+                                <td class="col-device" title="{{ data.device }}">
+                                    <span class="device-text">{{ data.device }}</span>
+                                </td>
+                                <td class="col-mountpoint" title="{{ data.mountpoint }}">
+                                    <span class="mountpoint-text">{{ data.mountpoint }}</span>
+                                </td>
+                                <td class="col-total">{{ "%.5f"|format(data.total_tb) }}</td>
+                                <td class="col-used">{{ "%.5f"|format(data.used_tb) }}</td>
+                                <td class="col-free">{{ "%.5f"|format(data.free_tb) }}</td>
+                                <td class="col-utilization">
+                                    <span class="utilization-badge {% if data.utilization >= 96 %}badge-critical{% elif data.utilization >= 90 %}badge-very-high{% elif data.utilization >= 80 %}badge-high{% elif data.utilization >= 70 %}badge-medium{% else %}badge-low{% endif %}">
+                                        {{ "%.2f"|format(data.utilization) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <div id="general-tab" class="tab-content {% if not critical_data %}active{% endif %}">
+                <div class="section-header">
+                    <h2>General Utilization</h2>
+                </div>
+                <div class="section-body">
+                    <table id="general-utilization-table">
+                        <thead>
+                            <tr>
+                                <th class="col-device">Device</th>
+                                <th class="col-mountpoint">Mountpoint</th>
+                                <th class="col-total">Quota (TB)</th>
+                                <th class="col-used">Used (TB)</th>
+                                <th class="col-free">Free (TB)</th>
+                                <th class="col-utilization">Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in general_data %}
+                            <tr class="{% if data.utilization >= 96 %}critical-utilization{% elif data.utilization >= 90 %}very-high-utilization{% elif data.utilization >= 80 %}high-utilization{% elif data.utilization >= 70 %}medium-utilization{% else %}low-utilization{% endif %}">
+                                <td class="col-device" title="{{ data.device }}">
+                                    <span class="device-text">{{ data.device }}</span>
+                                </td>
+                                <td class="col-mountpoint" title="{{ data.mountpoint }}">
+                                    <span class="mountpoint-text">{{ data.mountpoint }}</span>
+                                </td>
+                                <td class="col-total">{{ "%.5f"|format(data.total_tb) }}</td>
+                                <td class="col-used">{{ "%.5f"|format(data.used_tb) }}</td>
+                                <td class="col-free">{{ "%.5f"|format(data.free_tb) }}</td>
+                                <td class="col-utilization">
+                                    <span class="utilization-badge {% if data.utilization >= 96 %}badge-critical{% elif data.utilization >= 90 %}badge-very-high{% elif data.utilization >= 80 %}badge-high{% elif data.utilization >= 70 %}badge-medium{% else %}badge-low{% endif %}">
+                                        {{ "%.2f"|format(data.utilization) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if curator_data %}
+            <div id="curator-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Curator Utilization</h2>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-device">Device</th>
+                                <th class="col-mountpoint">Mountpoint</th>
+                                <th class="col-total">Quota (TB)</th>
+                                <th class="col-used">Used (TB)</th>
+                                <th class="col-free">Free (TB)</th>
+                                <th class="col-utilization">Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in curator_data %}
+                            <tr class="{% if data.utilization >= 96 %}critical-utilization{% elif data.utilization >= 90 %}very-high-utilization{% elif data.utilization >= 80 %}high-utilization{% elif data.utilization >= 70 %}medium-utilization{% else %}low-utilization{% endif %}">
+                                <td class="col-device" title="{{ data.device }}">
+                                    <span class="device-text">{{ data.device }}</span>
+                                </td>
+                                <td class="col-mountpoint" title="{{ data.mountpoint }}">
+                                    <span class="mountpoint-text">{{ data.mountpoint }}</span>
+                                </td>
+                                <td class="col-total">{{ "%.5f"|format(data.total_tb) }}</td>
+                                <td class="col-used">{{ "%.5f"|format(data.used_tb) }}</td>
+                                <td class="col-free">{{ "%.5f"|format(data.free_tb) }}</td>
+                                <td class="col-utilization">
+                                    <span class="utilization-badge {% if data.utilization >= 96 %}badge-critical{% elif data.utilization >= 90 %}badge-very-high{% elif data.utilization >= 80 %}badge-high{% elif data.utilization >= 70 %}badge-medium{% else %}badge-low{% endif %}">
+                                        {{ "%.2f"|format(data.utilization) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if raysync_data %}
+            <div id="raysync-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>RaySync Utilization</h2>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-device">Device</th>
+                                <th class="col-mountpoint">Mountpoint</th>
+                                <th class="col-total">Quota (TB)</th>
+                                <th class="col-used">Used (TB)</th>
+                                <th class="col-free">Free (TB)</th>
+                                <th class="col-utilization">Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in raysync_data %}
+                            <tr class="{% if data.utilization >= 96 %}critical-utilization{% elif data.utilization >= 90 %}very-high-utilization{% elif data.utilization >= 80 %}high-utilization{% elif data.utilization >= 70 %}medium-utilization{% else %}low-utilization{% endif %}">
+                                <td class="col-device" title="{{ data.device }}">
+                                    <span class="device-text">{{ data.device }}</span>
+                                </td>
+                                <td class="col-mountpoint" title="{{ data.mountpoint }}">
+                                    <span class="mountpoint-text">{{ data.mountpoint }}</span>
+                                </td>
+                                <td class="col-total">{{ "%.5f"|format(data.total_tb) }}</td>
+                                <td class="col-used">{{ "%.5f"|format(data.used_tb) }}</td>
+                                <td class="col-free">{{ "%.5f"|format(data.free_tb) }}</td>
+                                <td class="col-utilization">
+                                    <span class="utilization-badge {% if data.utilization >= 96 %}badge-critical{% elif data.utilization >= 90 %}badge-very-high{% elif data.utilization >= 80 %}badge-high{% elif data.utilization >= 70 %}badge-medium{% else %}badge-low{% endif %}">
+                                        {{ "%.2f"|format(data.utilization) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if lucid_data %}
+            <div id="lucid-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>LucidLink Utilization</h2>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-device">Device</th>
+                                <th class="col-mountpoint">Mountpoint</th>
+                                <th class="col-total">Quota (TB)</th>
+                                <th class="col-used">Used (TB)</th>
+                                <th class="col-free">Free (TB)</th>
+                                <th class="col-utilization">Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in lucid_data %}
+                            <tr class="{% if data.utilization >= 96 %}critical-utilization{% elif data.utilization >= 90 %}very-high-utilization{% elif data.utilization >= 80 %}high-utilization{% elif data.utilization >= 70 %}medium-utilization{% else %}low-utilization{% endif %}">
+                                <td class="col-device" title="{{ data.device }}">
+                                    <span class="device-text">{{ data.device }}</span>
+                                </td>
+                                <td class="col-mountpoint" title="{{ data.mountpoint }}">
+                                    <span class="mountpoint-text">{{ data.mountpoint }}</span>
+                                </td>
+                                <td class="col-total">{{ "%.5f"|format(data.total_tb) }}</td>
+                                <td class="col-used">{{ "%.5f"|format(data.used_tb) }}</td>
+                                <td class="col-free">{{ "%.5f"|format(data.free_tb) }}</td>
+                                <td class="col-utilization">
+                                    <span class="utilization-badge {% if data.utilization >= 96 %}badge-critical{% elif data.utilization >= 90 %}badge-very-high{% elif data.utilization >= 80 %}badge-high{% elif data.utilization >= 70 %}badge-medium{% else %}badge-low{% endif %}">
+                                        {{ "%.2f"|format(data.utilization) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if defunct_data %}
+            <div id="defunct-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Defunct Volumes</h2>
+                </div>
+                <div class="section-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-device">Device</th>
+                                <th class="col-mountpoint">Mountpoint</th>
+                                <th class="col-total">Quota (TB)</th>
+                                <th class="col-used">Used (TB)</th>
+                                <th class="col-free">Free (TB)</th>
+                                <th class="col-utilization">Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in defunct_data %}
+                            <tr class="{% if data.utilization >= 96 %}critical-utilization{% elif data.utilization >= 90 %}very-high-utilization{% elif data.utilization >= 80 %}high-utilization{% elif data.utilization >= 70 %}medium-utilization{% else %}low-utilization{% endif %}">
+                                <td class="col-device" title="{{ data.device }}">
+                                    <span class="device-text">{{ data.device }}</span>
+                                </td>
+                                <td class="col-mountpoint" title="{{ data.mountpoint }}">
+                                    <span class="mountpoint-text">{{ data.mountpoint }}</span>
+                                </td>
+                                <td class="col-total">{{ "%.5f"|format(data.total_tb) }}</td>
+                                <td class="col-used">{{ "%.5f"|format(data.used_tb) }}</td>
+                                <td class="col-free">{{ "%.5f"|format(data.free_tb) }}</td>
+                                <td class="col-utilization">
+                                    <span class="utilization-badge {% if data.utilization >= 96 %}badge-critical{% elif data.utilization >= 90 %}badge-very-high{% elif data.utilization >= 80 %}badge-high{% elif data.utilization >= 70 %}badge-medium{% else %}badge-low{% endif %}">
+                                        {{ "%.2f"|format(data.utilization) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabId) {
+            // Hide all tab contents
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+    
+            // Remove active class from all tab buttons
+            const tabButtons = document.getElementsByClassName('tab-btn');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+    
+            // Show selected tab content and mark its button as active
+            document.getElementById(tabId).classList.add('active');
+    
+            // Activate the tab button
+            const allButtons = document.querySelectorAll('.tab-btn');
+            for (let i = 0; i < allButtons.length; i++) {
+                if (allButtons[i].getAttribute('onclick')?.includes(tabId)) {
+                    allButtons[i].classList.add('active');
+                    break;
+                }
+            }
+    
+            localStorage.setItem('activeTab', tabId);
+        }
+    
+        document.addEventListener('DOMContentLoaded', function () {
+            // Modal logic
+            const refreshMountsBtn = document.getElementById('refresh-mounts-btn');
+            const modal = document.getElementById('mount-refresh-modal');
+            const closeModal = document.querySelector('.close-modal');
+            const authUsername = document.getElementById('auth-username');
+            const authPassword = document.getElementById('auth-password');
+            const authSubmit = document.getElementById('auth-submit');
+            const authCancel = document.getElementById('auth-cancel');
+            const authError = document.getElementById('auth-error');
+    
+            function showModal() {
+                modal.style.display = 'flex';
+                authUsername.focus();
+                authError.textContent = '';
+            }
+    
+            function hideModal() {
+                modal.style.display = 'none';
+                authUsername.value = '';
+                authPassword.value = '';
+            }
+    
+            function refreshMounts(username, password) {
+                refreshMountsBtn.disabled = true;
+                refreshMountsBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                    </svg>
+                    Refreshing...
+                `;
+    
+                fetch('/refresh_mounts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        hideModal();
+                        alert("Volume mounts refreshed successfully! Reloading...");
+                        window.location.reload();
+                    } else {
+                        authError.textContent = data.message || "Authentication failed.";
+                        resetRefreshButton();
+                    }
+                })
+                .catch(() => {
+                    authError.textContent = "Error connecting to server.";
+                    resetRefreshButton();
+                });
+            }
+    
+            function resetRefreshButton() {
+                refreshMountsBtn.disabled = false;
+                refreshMountsBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                        <path d="M21 3v5h-5"></path>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                        <path d="M3 21v-5h5"></path>
+                    </svg>
+                    Refresh Volume Mounts
+                `;
+            }
+    
+            if (refreshMountsBtn) refreshMountsBtn.addEventListener('click', showModal);
+            if (closeModal) closeModal.addEventListener('click', hideModal);
+            if (authCancel) authCancel.addEventListener('click', hideModal);
+    
+            if (authSubmit) {
+                authSubmit.addEventListener('click', () => {
+                    const username = authUsername.value.trim();
+                    const password = authPassword.value;
+                    if (!username || !password) {
+                        authError.textContent = "Please enter both username and password.";
+                        return;
+                    }
+                    refreshMounts(username, password);
+                });
+            }
+    
+            if (authPassword) {
+                authPassword.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') authSubmit.click();
+                });
+            }
+    
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) hideModal();
+            });
+    
+            // Auto-refresh logic
+            const refreshToggle = document.getElementById('refresh-toggle');
+            const refreshStatus = document.getElementById('refresh-status');
+            let refreshMetaTag = document.querySelector('meta[http-equiv="refresh"]');
+            let refreshTimer = null;
+    
+            if (refreshMetaTag) refreshMetaTag.remove();
+    
+            function toggleRefresh() {
+                if (refreshToggle.checked) {
+                    if (!refreshMetaTag) {
+                        refreshMetaTag = document.createElement('meta');
+                        refreshMetaTag.setAttribute('http-equiv', 'refresh');
+                        refreshMetaTag.setAttribute('content', '15');
+                        document.head.appendChild(refreshMetaTag);
+                    }
+                    refreshStatus.textContent = 'Auto-refresh is enabled (15s)';
+                    startRefreshTimer();
+                    localStorage.setItem('autoRefresh', 'true');
+                } else {
+                    if (refreshMetaTag) {
+                        refreshMetaTag.remove();
+                        refreshMetaTag = null;
+                    }
+                    refreshStatus.textContent = 'Auto-refresh is disabled';
+                    clearInterval(refreshTimer);
+                    localStorage.setItem('autoRefresh', 'false');
+                }
+            }
+    
+            function startRefreshTimer() {
+                let countdown = 15;
+                clearInterval(refreshTimer);
+                refreshTimer = setInterval(() => {
+                    countdown--;
+                    if (countdown <= 0) countdown = 15;
+                    if (refreshToggle.checked) {
+                        refreshStatus.textContent = `Auto-refresh is enabled (${countdown}s)`;
+                    }
+                }, 1000);
+            }
+    
+            refreshToggle.addEventListener('change', toggleRefresh);
+            if (localStorage.getItem('autoRefresh') === 'true') {
+                refreshToggle.checked = true;
+            } else {
+                refreshToggle.checked = false;
+                refreshStatus.textContent = 'Auto-refresh is disabled';
+            }
+            toggleRefresh();
+    
+            // Restore active tab
+            const activeTab = localStorage.getItem('activeTab');
+            if (activeTab) {
+                try {
+                    openTab(activeTab);
+                } catch (e) {
+                    console.log('Saved tab not found, using default');
+                }
+            }
+    
+            // ? Initialize DataTables (refactor if all share class)
+            $('.utilization-table').each(function () {
+                $(this).DataTable({
+                    paging: false,
+                    info: false,
+                    searching: false,
+                    order: [[3, 'desc']]
+                });
+            });
+        });
+    </script>
+
+    
+        <div id="mount-refresh-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Authentication Required</h3>
+            <p>Please enter your credentials to refresh volume mounts:</p>
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="auth-username">Username:</label>
+                    <input type="text" id="auth-username" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Password:</label>
+                    <input type="password" id="auth-password" placeholder="Password">
+                </div>
+                <div class="auth-buttons">
+                    <button id="auth-cancel" class="cancel-btn">Cancel</button>
+                    <button id="auth-submit" class="submit-btn">Submit</button>
+                </div>
+                <div id="auth-error" class="auth-error"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        $(document).ready(function () {
+            $('#general-utilization-table').DataTable({
+                paging: false,
+                info: false,
+                searching: false,
+                order: [[3, 'desc']]
+            });
+        });
+    </script>
+
+</body>
+</html>
