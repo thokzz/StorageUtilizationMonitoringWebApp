@@ -2,7 +2,7 @@
 
 ## Overview
 
-PMC Storage Utilization Monitor is a web application designed to monitor and display storage utilization across networked volumes. This tool provides real-time visualization of storage metrics including used space, free space, and utilization percentages across different storage categories.
+This Storage Utilization Monitor is a web application designed to monitor and display storage utilization across networked volumes. This tool provides real-time visualization of storage metrics including used space, free space, and utilization percentages across different storage categories.
 
 **Created without prior coding experience using AI assistance (ChatGPT 4.0 and Claude 3.7 Sonnet)**
 
